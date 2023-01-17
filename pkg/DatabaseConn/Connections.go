@@ -13,7 +13,7 @@ import (
 )
 
 // const URI = "mongodb+srv://anvesh9652:12345@cluster0.n763atd.mongodb.net/test"
-const URI = "mongodb://localhost:27017"
+const URI = "mongodb://mongo-container:27017"
 const collectionName = "webpages"
 const databaseName = "Search-Engine"
 
