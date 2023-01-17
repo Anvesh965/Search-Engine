@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-var WebPages []Webpage
-
 type Ranks struct {
 	PageName string `json:"title"`
 	Value    int    `json:"rank"`
