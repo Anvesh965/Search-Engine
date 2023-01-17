@@ -3,11 +3,9 @@ package Routes
 import (
 	"log"
 	"net/http"
-	. "search-engine/pkg/Models"
 	. "search-engine/pkg/Controllers"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GetRouter() *mux.Router {
@@ -38,7 +36,5 @@ func StartServer() {
 	HandleRoutes(router)
 	log.Println("Listeninig on port 4000.......")
 
-	//seeding
-	WebPages = append(WebPages, Webpage{Id: primitive.NilObjectID, Title: "page-demo", Keywords: []string{"wrd1", "wrd2", "wrd3", "wrd4"}})
 	log.Fatal(http.ListenAndServe(":4000", router))
 }
