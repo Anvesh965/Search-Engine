@@ -6,7 +6,6 @@ import (
 	. "search-engine/pkg/Routes"
 )
 
-// temp DB
 func main() {
 	LoadConfig()
 	DatabaseConn.Start()

@@ -15,21 +15,33 @@ import (
 	. "search-engine/cmd/config"
 )
 
-// const URI = "mongodb+srv://anvesh9652:12345@cluster0.n763atd.mongodb.net/test"
-//const URI = "mongodb://localhost:27017"
-//const collectionName = "webpages"
-//const databaseName = "Search-Engine"
+
+const URI = "mongodb://mongo-container:27017"
+const collectionName = "webpages"
+const databaseName = "Search-Engine"
+
 
 var collPtr *mongo.Collection
 
 func Start() {
 
 	// Connecting to MongoDB database
+
 	URI := Config.Database.Protocol + "://" + Config.Database.Host + ":" + strconv.Itoa(Config.Database.Port)
 	log.Println("URI:", URI)
-	myOptions := options.Client().ApplyURI(URI)
-	client, err := mongo.Connect(context.TODO(), myOptions)
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	myOptions := options.Client().ApplyURI(URI)
+	client, err := mongo.Connect(ctx, myOptions)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// checking whether connection was successful or not.
+	err = client.Ping(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,11 +49,11 @@ func Start() {
 	fmt.Println("Successfully Connected to MongoDB")
 
 	// creating database and collections
+  
 	collPtr = client.Database(Config.Database.DBName).Collection(Config.Database.Collection)
-
 }
 
-func UploadWebpage(webpage Models.Webpage) {
+func UploadWebpage(webpage *Models.Webpage) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -53,7 +65,7 @@ func UploadWebpage(webpage Models.Webpage) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Record inserted with id: ", result.InsertedID)
+	fmt.Println("Record inserted with id:", result.InsertedID)
 
 }
 
