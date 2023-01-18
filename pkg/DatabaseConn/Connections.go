@@ -5,23 +5,28 @@ import (
 	"fmt"
 	"log"
 	"search-engine/pkg/Models"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	. "search-engine/cmd/config"
 )
 
 // const URI = "mongodb+srv://anvesh9652:12345@cluster0.n763atd.mongodb.net/test"
-const URI = "mongodb://localhost:27017"
-const collectionName = "webpages"
-const databaseName = "Search-Engine"
+//const URI = "mongodb://localhost:27017"
+//const collectionName = "webpages"
+//const databaseName = "Search-Engine"
 
 var collPtr *mongo.Collection
 
 func Start() {
 
 	// Connecting to MongoDB database
+	URI := Config.Database.Protocol + "://" + Config.Database.Host + ":" + strconv.Itoa(Config.Database.Port)
+	log.Println("URI:", URI)
 	myOptions := options.Client().ApplyURI(URI)
 	client, err := mongo.Connect(context.TODO(), myOptions)
 
@@ -32,7 +37,7 @@ func Start() {
 	fmt.Println("Successfully Connected to MongoDB")
 
 	// creating database and collections
-	collPtr = client.Database(databaseName).Collection(collectionName)
+	collPtr = client.Database(Config.Database.DBName).Collection(Config.Database.Collection)
 
 }
 

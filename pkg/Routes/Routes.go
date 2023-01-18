@@ -3,7 +3,9 @@ package Routes
 import (
 	"log"
 	"net/http"
+	. "search-engine/cmd/config"
 	. "search-engine/pkg/Controllers"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -36,5 +38,6 @@ func StartServer() {
 	HandleRoutes(router)
 	log.Println("Listeninig on port 4000.......")
 
-	log.Fatal(http.ListenAndServe(":4000", router))
+	url := Config.Server.Host + ":" + strconv.Itoa(Config.Server.Port)
+	log.Fatal(http.ListenAndServe(url, router))
 }
