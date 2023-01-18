@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -37,9 +36,4 @@ func LoadConfig() {
 	if err != nil {
 		log.Fatalf("Error unmarshalling config: %s", err)
 	}
-
-	// Print the config to verify it was read correctly
-	fmt.Printf("Server: %s:%d\n", Config.Server.Host, Config.Server.Port)
-	fmt.Printf("Database: %s:%d/%s\n", Config.Database.Host, Config.Database.Port, Config.Database.Protocol)
-
 }
