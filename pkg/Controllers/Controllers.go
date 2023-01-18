@@ -8,6 +8,8 @@ import (
 	. "search-engine/pkg/Models"
 	"sort"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Ranks struct {
@@ -38,8 +40,9 @@ func CreateWebPage(w http.ResponseWriter, r *http.Request) {
 	var webpage Webpage
 
 	_ = json.NewDecoder(r.Body).Decode(&webpage)
+	webpage.Id = primitive.NewObjectID()
 
-	UploadWebpage(webpage)
+	UploadWebpage(&webpage)
 
 	//do some checking of data valid or not
 	json.NewEncoder(w).Encode(webpage)
