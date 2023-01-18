@@ -12,7 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// const URI = "mongodb+srv://anvesh9652:12345@cluster0.n763atd.mongodb.net/test"
+// const URI = "mongodb+srv://anvesh9652:12345@cluster0.buf4lmx.mongodb.net/?retryWrites=true&w=majority"
+
 const URI = "mongodb://mongo-container:27017"
 const collectionName = "webpages"
 const databaseName = "Search-Engine"
@@ -22,9 +23,17 @@ var collPtr *mongo.Collection
 func Start() {
 
 	// Connecting to MongoDB database
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	myOptions := options.Client().ApplyURI(URI)
-	client, err := mongo.Connect(context.TODO(), myOptions)
+	client, err := mongo.Connect(ctx, myOptions)
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// checking whether connection was successful or not.
+	err = client.Ping(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,10 +42,9 @@ func Start() {
 
 	// creating database and collections
 	collPtr = client.Database(databaseName).Collection(collectionName)
-
 }
 
-func UploadWebpage(webpage Models.Webpage) {
+func UploadWebpage(webpage *Models.Webpage) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -48,7 +56,7 @@ func UploadWebpage(webpage Models.Webpage) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Record inserted with id: ", result.InsertedID)
+	fmt.Println("Record inserted with id:", result.InsertedID)
 
 }
 

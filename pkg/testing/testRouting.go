@@ -24,7 +24,7 @@ func HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&webpage)
 
-	DatabaseConn.UploadWebpage(webpage)
+	DatabaseConn.UploadWebpage(&webpage)
 
 	json.NewEncoder(w).Encode(webpage)
 }
