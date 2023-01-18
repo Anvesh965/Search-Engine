@@ -26,7 +26,7 @@ var Config Configure
 func LoadConfig() {
 
 	// Read config.yaml file
-	data, err := ioutil.ReadFile("config/config.yaml")
+	data, err := ioutil.ReadFile("./cmd/config/config.yaml")
 	if err != nil {
 		log.Fatalf("Error reading config file: %s", err)
 	}
