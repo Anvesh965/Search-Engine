@@ -38,6 +38,6 @@ func StartServer() {
 	HandleRoutes(router)
 	log.Println("Listeninig on port 4000.......")
 
-	url := Config.Server.Host + ":" + strconv.Itoa(Config.Server.Port)
+	url := ":" + strconv.Itoa(Config.Server.Port)
 	log.Fatal(http.ListenAndServe(url, router))
 }

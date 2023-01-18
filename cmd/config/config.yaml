@@ -3,7 +3,7 @@ server:
   port: 4000
 
 database:
-  host: localhost
+  host: mongo-container
   port: 27017
   protocol: mongodb
   dbname: Search-Engine
