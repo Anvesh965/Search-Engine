@@ -1,8 +1,5 @@
 ## **Search-Engine-Task**
-
 ---
-
-<br>
 
 ### **Step 1:** Clone the repository :
 
