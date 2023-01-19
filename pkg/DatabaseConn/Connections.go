@@ -2,7 +2,6 @@ package DatabaseConn
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"search-engine/pkg/Models"
 	"strconv"
@@ -14,12 +13,6 @@ import (
 
 	. "search-engine/cmd/config"
 )
-
-
-const URI = "mongodb://mongo-container:27017"
-const collectionName = "webpages"
-const databaseName = "Search-Engine"
-
 
 var collPtr *mongo.Collection
 
@@ -46,10 +39,10 @@ func Start() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Successfully Connected to MongoDB")
+	log.Println("Successfully Connected to MongoDB")
 
 	// creating database and collections
-  
+
 	collPtr = client.Database(Config.Database.DBName).Collection(Config.Database.Collection)
 }
 
@@ -65,7 +58,7 @@ func UploadWebpage(webpage *Models.Webpage) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Record inserted with id:", result.InsertedID)
+	log.Println("Record inserted with id:", result.InsertedID)
 
 }
 
