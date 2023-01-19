@@ -1,43 +1,37 @@
 package Routes
 
 import (
-	"log"
-	"net/http"
 	. "search-engine/cmd/config"
 	. "search-engine/pkg/Controllers"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-func GetRouter() *mux.Router {
-	r := mux.NewRouter()
+func GetRouter() *gin.Engine {
+	//gin.SetMode(gin.ReleaseMode)
+	r := gin.Default()
+	r.SetTrustedProxies(nil)
 	return r
 }
-func HandleRoutes(router *mux.Router) {
+func HandleRoutes(router *gin.Engine) {
 
+	router.GET("/", StatusCheck)
 	HandleVersion1(router)
-	//HandleVersion2(router)
 
 }
-func HandleVersion1(router *mux.Router) {
-	var api1 = router.PathPrefix("/v1").Subrouter()
-	api1.HandleFunc("/", ServerHome).Methods("GET")
-	api1.HandleFunc("/savepage", CreateWebPage).Methods("POST")
-	api1.HandleFunc("/querypages", QueryHandle).Methods("GET")
-	api1.HandleFunc("/allpages", GetAllWebPages).Methods("GET")
+func HandleVersion1(router *gin.Engine) {
+	var api1 = router.Group("/v1")
+	api1.GET("/", ServerHome)
+	api1.POST("/savepage", CreateWebPage)
+	api1.GET("/querypages", QueryHandle)
+	api1.GET("/allpages", GetAllWebPages)
 }
 
-func HandleVersion2(router *mux.Router) {
-	//var api2 = router.PathPrefix("/v2").Subrouter()
-	log.Println("HandleVersion2:: Called")
-
-}
 func StartServer() {
 	router := GetRouter()
 	HandleRoutes(router)
-	log.Println("Listeninig on port 4000.......")
 
 	url := ":" + strconv.Itoa(Config.Server.Port)
-	log.Fatal(http.ListenAndServe(url, router))
+	router.Run(url)
 }
