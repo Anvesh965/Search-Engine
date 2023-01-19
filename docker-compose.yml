@@ -5,8 +5,11 @@ services:
     expose:
       - 27017
     volumes:
-      - ./store/v1/data:/data/db
-      - ./store/v1/config:/data/configdb
+      - data-vol:/data/db
+      - config-vol:/data/configdb
+    #   - ./store/v1/data:/data/db
+    #   - ./store/v1/config:/data/configdb
+
   
   app-container:
     build: .
@@ -14,3 +17,8 @@ services:
       - 4000:4000
     depends_on:
       - mongo-container
+
+volumes:
+    data-vol: 
+    config-vol: 
+
