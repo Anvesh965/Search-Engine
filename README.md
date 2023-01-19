@@ -29,13 +29,13 @@ docker-compose up --build
      http://localhost:4000/
      ```
 
-  1. To see all webpages in MongoDB : **GET** Request
+  2. To see all webpages in MongoDB : **GET** Request
 
      ```
      http://localhost:4000/v1/allpages
      ```
 
-  1. To store webpage in MongoDB : **POST** Request
+  3. To store webpage in MongoDB : **POST** Request
 
      ```
      http://localhost:4000/v1/savepage
@@ -50,7 +50,7 @@ docker-compose up --build
      }
      ```
 
-  1. Query : **GET** Request
+  4. Query : **GET** Request
 
      ```
      http://localhost:4000/v1/querypages
