@@ -1,14 +1,13 @@
 package Controllers
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 	. "search-engine/pkg/DatabaseConn"
 	. "search-engine/pkg/Models"
 	"sort"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -17,56 +16,44 @@ type Ranks struct {
 	Value    int    `json:"rank"`
 }
 
-func ServerHome(w http.ResponseWriter, r *http.Request) {
-	log.Println("ServerHome ::Called")
-	w.Write([]byte("<h1>Welcome to Ranking websites Rest-Api</h1>"))
+func StatusCheck(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"Status": "Server Running",
+	})
 }
-func GetAllWebPages(w http.ResponseWriter, r *http.Request) {
-	log.Println("GetAllCourses ::Called")
-	w.Header().Set("content-type", "application/json")
-
+func ServerHome(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"message": "Search-Engine-Rest-Api",
+		"Version": "v1",
+	})
+}
+func GetAllWebPages(c *gin.Context) {
 	allPages := AllPagesInCollection()
-	json.NewEncoder(w).Encode(allPages)
-	//handle in v1
+	c.IndentedJSON(http.StatusOK, allPages)
 }
-func CreateWebPage(w http.ResponseWriter, r *http.Request) {
-	//handle in v1
-	log.Println("CreateWebPage :: Called")
-	w.Header().Set("content-type", "application/json")
-	if r.Body == nil {
-		json.NewEncoder(w).Encode("Enter some data")
-		return
-	}
+func CreateWebPage(c *gin.Context) {
 	var webpage Webpage
 
-	_ = json.NewDecoder(r.Body).Decode(&webpage)
+	if err := c.BindJSON(&webpage); err != nil {
+		c.IndentedJSON(http.StatusNoContent, gin.H{
+			"message": "Enter a valid Content",
+		})
+	}
 	webpage.Id = primitive.NewObjectID()
-
 	UploadWebpage(&webpage)
-
-	//do some checking of data valid or not
-	json.NewEncoder(w).Encode(webpage)
-
+	c.IndentedJSON(http.StatusCreated, webpage)
 }
-func QueryHandle(w http.ResponseWriter, r *http.Request) {
-	//handle in v1
-	log.Println("QueryHandle :: Called")
-	w.Header().Set("content-type", "application/json")
-	if r.Body == nil {
-		json.NewEncoder(w).Encode("Enter some data")
-		return
-	}
+func QueryHandle(c *gin.Context) {
 	var webpage Webpage
-	_ = json.NewDecoder(r.Body).Decode(&webpage)
-
+	if err := c.BindJSON(&webpage); err != nil {
+		c.IndentedJSON(http.StatusNoContent, gin.H{
+			"message": "Enter a valid Content",
+		})
+	}
 	PageRanks := GeneratePageRanks(webpage.Keywords)
-	json.NewEncoder(w).Encode(PageRanks)
-
+	c.IndentedJSON(http.StatusOK, PageRanks)
 }
 func GeneratePageRanks(params []string) []Ranks {
-
-	log.Println("GeneratePageRanks")
-
 	WebPages := Search(params)
 	var PageRank []Ranks
 	for _, webpage := range WebPages {
