@@ -1,9 +1,10 @@
 package Controllers
 
 import (
+	"log"
 	"net/http"
 	. "search-engine/pkg/DatabaseConn"
-	. "search-engine/pkg/Models"
+	"search-engine/pkg/Models"
 	"sort"
 	"strings"
 
@@ -15,40 +16,80 @@ type Ranks struct {
 	PageName string `json:"title"`
 	Value    int    `json:"rank"`
 }
+type Message struct {
+	Msg     string `json:"message"`
+	Version string `json:"version",omitempty`
+}
 
 func StatusCheck(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{
-		"Status": "Server Running",
-	})
+	c.JSON(http.StatusOK, "Server Running")
 }
+
+// @Summary get version data
+// @ID get-version-details
+// @Produce json
+// @Success 200 {object} Message
+// @Router /v1/ [get]
 func ServerHome(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{
-		"message": "Search-Engine-Rest-Api",
-		"Version": "v1",
-	})
+	msg := Message{"Search-Engine-Rest-Api", "v1"}
+	c.IndentedJSON(http.StatusOK, msg)
 }
+
+// @Summary get all pages in the webpages
+// @ID get-all-webpages
+// @Produce json
+// @Success 200 {object} Models.Webpage
+// @Router /v1/allpages [get]
 func GetAllWebPages(c *gin.Context) {
 	allPages := AllPagesInCollection()
 	c.IndentedJSON(http.StatusOK, allPages)
 }
-func CreateWebPage(c *gin.Context) {
-	var webpage Webpage
 
-	if err := c.BindJSON(&webpage); err != nil {
-		c.IndentedJSON(http.StatusNoContent, gin.H{
-			"message": "Enter a valid Content",
-		})
+// @Summary add a new webpage to the webpages list
+// @ID create-web-page
+// @Accept	json
+// @Produce json
+// @Param Page body Models.Page true "The input webpage details"
+// @Success 201 {object} Models.Webpage
+// @Failure 206 {object} Message
+// @Failure 406 {object} Message
+// @Router /v1/savepage [post]
+func CreateWebPage(c *gin.Context) {
+	var webpage Models.Webpage
+
+	var msg Message
+	msg.Msg = "Enter a valid Content"
+	err := c.BindJSON(&webpage)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotAcceptable, msg)
+		return
 	}
+	if webpage.Check() {
+		c.IndentedJSON(http.StatusPartialContent, msg)
+		return
+	}
+	webpage.ModifyKeysLength()
 	webpage.Id = primitive.NewObjectID()
 	UploadWebpage(&webpage)
 	c.IndentedJSON(http.StatusCreated, webpage)
 }
+
+// @Summary get page ranks for keywords
+// @ID get-page-ranks
+// @Accept json
+// @Produce json
+// @Param data body Models.Keys true "The input Keyword list"
+// @Success 200 {object} Ranks
+// @Failure 404 {object} Message
+// @Router /v1/querypages [post]
 func QueryHandle(c *gin.Context) {
-	var webpage Webpage
+	var webpage Models.Webpage
+	var msg Message
+	msg.Msg = "Enter a valid Content"
+	log.Println(c.Params)
 	if err := c.BindJSON(&webpage); err != nil {
-		c.IndentedJSON(http.StatusNoContent, gin.H{
-			"message": "Enter a valid Content",
-		})
+		c.IndentedJSON(http.StatusNoContent, msg)
+		return
 	}
 	PageRanks := GeneratePageRanks(webpage.Keywords)
 	c.IndentedJSON(http.StatusOK, PageRanks)
