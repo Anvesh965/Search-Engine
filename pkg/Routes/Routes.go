@@ -3,6 +3,7 @@ package Routes
 import (
 	. "search-engine/cmd/config"
 	. "search-engine/pkg/Controllers"
+	. "search-engine/pkg/DatabaseConn"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -16,24 +17,30 @@ func GetRouter() *gin.Engine {
 	r.SetTrustedProxies(nil)
 	return r
 }
-func HandleRoutes(router *gin.Engine) {
+func HandleRoutes(router *gin.Engine, rdb *RealDBFunction) {
 
 	router.GET("/", StatusCheck)
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	HandleVersion1(router)
+	HandleVersion1(router, rdb)
 
 }
-func HandleVersion1(router *gin.Engine) {
+func HandleVersion1(router *gin.Engine, rdb *RealDBFunction) {
 	var api1 = router.Group("/v1")
 	api1.GET("/", ServerHome)
-	api1.POST("/savepage", CreateWebPage)
-	api1.POST("/querypages", QueryHandle)
-	api1.GET("/allpages", GetAllWebPages)
+	api1.POST("/savepage", func(c *gin.Context) {
+		CreateWebPage(c, rdb)
+	})
+	api1.POST("/querypages", func(c *gin.Context) {
+		QueryHandle(c, rdb)
+	})
+	api1.GET("/allpages", func(c *gin.Context) {
+		GetAllWebPages(c, rdb)
+	})
 }
 
-func StartServer() {
+func StartServer(rdb *RealDBFunction) {
 	router := GetRouter()
-	HandleRoutes(router)
+	HandleRoutes(router, rdb)
 
 	url := ":" + strconv.Itoa(Config.Server.Port)
 	router.Run(url)

@@ -47,12 +47,11 @@ info:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: This is a sample server todo server. You can visit the GitHub repository
-    at https://github.com/LordGhostX/swag-gin-demo
+  description: Search-Engine-Rest_API. You can visit the GitHub repository at https://github.com/Anvesh965/Search-Engine
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  title: Go + Gin Search-Engine-API
+  title: Search-Engine-API
   version: "2.0"
 paths:
   /v1/:

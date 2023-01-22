@@ -18,7 +18,7 @@ type Ranks struct {
 }
 type Message struct {
 	Msg     string `json:"message"`
-	Version string `json:"version",omitempty`
+	Version string `json:"version,omitempty"`
 }
 
 func StatusCheck(c *gin.Context) {
@@ -40,8 +40,8 @@ func ServerHome(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} Models.Webpage
 // @Router /v1/allpages [get]
-func GetAllWebPages(c *gin.Context) {
-	allPages := AllPagesInCollection()
+func GetAllWebPages(c *gin.Context, rdb *RealDBFunction) {
+	allPages := rdb.AllPagesInCollection()
 	c.IndentedJSON(http.StatusOK, allPages)
 }
 
@@ -54,7 +54,7 @@ func GetAllWebPages(c *gin.Context) {
 // @Failure 206 {object} Message
 // @Failure 406 {object} Message
 // @Router /v1/savepage [post]
-func CreateWebPage(c *gin.Context) {
+func CreateWebPage(c *gin.Context, rdb *RealDBFunction) {
 	var webpage Models.Webpage
 
 	var msg Message
@@ -70,7 +70,7 @@ func CreateWebPage(c *gin.Context) {
 	}
 	webpage.ModifyKeysLength()
 	webpage.Id = primitive.NewObjectID()
-	UploadWebpage(&webpage)
+	rdb.UploadWebpage(&webpage)
 	c.IndentedJSON(http.StatusCreated, webpage)
 }
 
@@ -82,7 +82,7 @@ func CreateWebPage(c *gin.Context) {
 // @Success 200 {object} Ranks
 // @Failure 404 {object} Message
 // @Router /v1/querypages [post]
-func QueryHandle(c *gin.Context) {
+func QueryHandle(c *gin.Context, rdb *RealDBFunction) {
 	var webpage Models.Webpage
 	var msg Message
 	msg.Msg = "Enter a valid Content"
@@ -91,11 +91,11 @@ func QueryHandle(c *gin.Context) {
 		c.IndentedJSON(http.StatusNoContent, msg)
 		return
 	}
-	PageRanks := GeneratePageRanks(webpage.Keywords)
+	PageRanks := GeneratePageRanks(webpage.Keywords, rdb)
 	c.IndentedJSON(http.StatusOK, PageRanks)
 }
-func GeneratePageRanks(params []string) []Ranks {
-	WebPages := Search(params)
+func GeneratePageRanks(params []string, rdb *RealDBFunction) []Ranks {
+	WebPages := rdb.Search(params)
 	var PageRank []Ranks
 	for _, webpage := range WebPages {
 		score := GetScore(webpage.Keywords, params)

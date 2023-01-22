@@ -24,3 +24,10 @@ down:
 	docker-compose down
 
 	@echo Done!
+swag:
+
+	@echo generating swagger docs.json
+
+	swag init -d ./cmd/ -o ./docs --parseDependency
+
+	@echo done with swagger docs

@@ -16,7 +16,10 @@ import (
 
 var collPtr *mongo.Collection
 
-func Start() {
+type RealDBFunction struct {
+}
+
+func (rdb *RealDBFunction) Start() {
 
 	// Connecting to MongoDB database
 
@@ -46,7 +49,7 @@ func Start() {
 	collPtr = client.Database(Config.Database.DBName).Collection(Config.Database.Collection)
 }
 
-func UploadWebpage(webpage *Models.Webpage) {
+func (rdb *RealDBFunction) UploadWebpage(webpage *Models.Webpage) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -62,7 +65,7 @@ func UploadWebpage(webpage *Models.Webpage) {
 
 }
 
-func Search(keys []string) []Models.Webpage {
+func (rdb *RealDBFunction) Search(keys []string) []Models.Webpage {
 
 	var orOptions []bson.M
 
@@ -98,7 +101,7 @@ func Search(keys []string) []Models.Webpage {
 
 }
 
-func AllPagesInCollection() []Models.Webpage {
+func (rdb *RealDBFunction) AllPagesInCollection() []Models.Webpage {
 	ctx, cance := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cance()
 
