@@ -63,6 +63,10 @@ docker-compose up --build
        "keywords": ["tesla", "ford", "wan"]
      }
      ```
+    5. Swagger UI 
+     ```
+    http://localhost:4000/docs/index.html
+     ```
 
 ### **Step 4 :** To stop running containers
 

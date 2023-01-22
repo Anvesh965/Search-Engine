@@ -1,0 +1,201 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample server todo server. You can visit the GitHub repository at https://github.com/LordGhostX/swag-gin-demo",
+        "title": "Go + Gin Search-Engine-API",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "2.0"
+    },
+    "host": "localhost:4000",
+    "basePath": "/",
+    "paths": {
+        "/v1/": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "get version data",
+                "operationId": "get-version-details",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Controllers.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/allpages": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "get all pages in the webpages",
+                "operationId": "get-all-webpages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Models.Webpage"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/querypages": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "get page ranks for keywords",
+                "operationId": "get-page-ranks",
+                "parameters": [
+                    {
+                        "description": "The input Keyword list",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Models.Keys"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Controllers.Ranks"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/Controllers.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/savepage": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "add a new webpage to the webpages list",
+                "operationId": "create-web-page",
+                "parameters": [
+                    {
+                        "description": "The input webpage details",
+                        "name": "Page",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Models.Page"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/Models.Webpage"
+                        }
+                    },
+                    "206": {
+                        "description": "Partial Content",
+                        "schema": {
+                            "$ref": "#/definitions/Controllers.Message"
+                        }
+                    },
+                    "406": {
+                        "description": "Not Acceptable",
+                        "schema": {
+                            "$ref": "#/definitions/Controllers.Message"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Controllers.Message": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "Controllers.Ranks": {
+            "type": "object",
+            "properties": {
+                "rank": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "Models.Keys": {
+            "type": "object",
+            "properties": {
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "Models.Page": {
+            "type": "object",
+            "properties": {
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "Models.Webpage": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

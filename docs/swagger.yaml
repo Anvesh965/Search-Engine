@@ -1,0 +1,132 @@
+basePath: /
+definitions:
+  Controllers.Message:
+    properties:
+      message:
+        type: string
+      version:
+        type: string
+    type: object
+  Controllers.Ranks:
+    properties:
+      rank:
+        type: integer
+      title:
+        type: string
+    type: object
+  Models.Keys:
+    properties:
+      keywords:
+        items:
+          type: string
+        type: array
+    type: object
+  Models.Page:
+    properties:
+      keywords:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  Models.Webpage:
+    properties:
+      id:
+        type: string
+      keywords:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+host: localhost:4000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server todo server. You can visit the GitHub repository
+    at https://github.com/LordGhostX/swag-gin-demo
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Go + Gin Search-Engine-API
+  version: "2.0"
+paths:
+  /v1/:
+    get:
+      operationId: get-version-details
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Controllers.Message'
+      summary: get version data
+  /v1/allpages:
+    get:
+      operationId: get-all-webpages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Models.Webpage'
+      summary: get all pages in the webpages
+  /v1/querypages:
+    post:
+      consumes:
+      - application/json
+      operationId: get-page-ranks
+      parameters:
+      - description: The input Keyword list
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/Models.Keys'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Controllers.Ranks'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Controllers.Message'
+      summary: get page ranks for keywords
+  /v1/savepage:
+    post:
+      consumes:
+      - application/json
+      operationId: create-web-page
+      parameters:
+      - description: The input webpage details
+        in: body
+        name: Page
+        required: true
+        schema:
+          $ref: '#/definitions/Models.Page'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Models.Webpage'
+        "206":
+          description: Partial Content
+          schema:
+            $ref: '#/definitions/Controllers.Message'
+        "406":
+          description: Not Acceptable
+          schema:
+            $ref: '#/definitions/Controllers.Message'
+      summary: add a new webpage to the webpages list
+swagger: "2.0"
