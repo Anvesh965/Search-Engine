@@ -1,65 +1,10 @@
 package Routes
 
-/*
 import (
 	"bytes"
-	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"search-engine/pkg/DatabaseConn"
-	"search-engine/pkg/Models"
-	"testing"
-
-	mocks "search-engine/mocks/pkg/DatabaseConn"
-	. "search-engine/pkg/Controllers"
-
-
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert" // import mock package
-	"github.com/stretchr/testify/mock"
-)
-
-func TestCreateWebPage(t *testing.T) {
-	// create new gin router
-	router := gin.Default()
-
-	dbMock := new(mocks.DBFunctions)
-	dbMock.On("UploadWebpage", &Models.Webpage{}).Return(mock.Anything)
-	// define endpoint
-	router.POST("/v1/savepage", func(c *gin.Context) {
-		CreateWebPage(c, &DatabaseConn.RealDBFunction{})
-	})
-
-	// create mock for DB function
-
-	// replace real DB function with mock
-	router.Use(func(c *gin.Context) {
-		c.Set("rdb", &dbMock)
-	})
-
-	// create request to endpoint
-	input := `{"title":"test-page","keywords":["test","content"]}`
-	req, _ := http.NewRequest("POST", "/v1/savepage", bytes.NewBufferString(input))
-	resp := httptest.NewRecorder()
-	router.ServeHTTP(resp, req)
-
-	// check response
-	assert.Equal(t, http.StatusCreated, resp.Code)
-
-	var webpage Models.Webpage
-	err := json.Unmarshal(resp.Body.Bytes(), &webpage)
-	if err != nil {
-		t.Errorf("Error while Unmarshalling response")
-	}
-	// check if mock function was called
-	dbMock.AssertExpectations(t)
-}
-*/
-import (
-	"bytes"
-	"net/http"
-	"net/http/httptest"
-	"search-engine/pkg/DatabaseConn"
 	"search-engine/pkg/Models"
 	"testing"
 
@@ -70,31 +15,59 @@ import (
 	. "search-engine/pkg/Controllers"
 )
 
-func TestCreateWebPage(t *testing.T) {
+func TestGetAllWebPages(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	rdb := &DatabaseConn.RealDBFunction{}
-	router.POST("/savepage", func(c *gin.Context) {
-		CreateWebPage(c, rdb)
-	})
+	//rdb := &DatabaseConn.RealDBFunction{}
 
+	//webpage := Models.Webpage{Id: primitive.NilObjectID, Title: "page-1", Keywords: []string{"wrd1", "wrd2"}}
 	// Create mock for DB function
-	rdbMock := new(mocks.DBFunctions)
-	rdbMock.On("UploadWebpage", &Models.Webpage{}).Return()
+	rdbMock := mocks.NewDBFunctions(t)
+	rdbMock.On("AllPagesInCollection").Return([]Models.Webpage{})
+	router.GET("/allpages", func(c *gin.Context) {
+		GetAllWebPages(c, rdbMock)
+	})
 
 	// Replace real DB function with mock
-	router.Use(func(c *gin.Context) {
-		c.Set("rdb", rdbMock)
-	})
 
 	// Create request to endpoint
-	input := `{"title":"Page-1","keywords":["wrd1","wrd2"]}`
-	req, _ := http.NewRequest("POST", "/savepage", bytes.NewBufferString(input))
+	//jsonInput, _ := json.Marshal(webpage)
+	//input := `{"title":"page-1","keywords":["wrd1","wrd2"]}`
+	req, err := http.NewRequest("GET", "/allpages", nil)
+	if err != nil {
+		log.Println(err)
+	}
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
 	// Check response
-	assert.Equal(t, http.StatusCreated, resp.Code)
+	assert.Equal(t, http.StatusOK, resp.Code)
+	// Check if mock function was called
+	rdbMock.AssertExpectations(t)
+}
+func TestCreateWebPage(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+	rdbMock := mocks.NewDBFunctions(t)
+	rdbMock.On("UploadWebpage", &Models.Webpage{}).Return(Models.Webpage{})
+	router.POST("/savepage", func(c *gin.Context) {
+		CreateWebPage(c, rdbMock)
+	})
 
+	// Replace real DB function with mock
+
+	// Create request to endpoint
+	//jsonInput, _ := json.Marshal(webpage)
+	input := `{}`
+	req, err := http.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
+	if err != nil {
+		log.Println(err)
+	}
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+
+	// Check response
+	assert.Equal(t, http.StatusPartialContent, resp.Code)
 	// Check if mock function was called
 	rdbMock.AssertExpectations(t)
 }
