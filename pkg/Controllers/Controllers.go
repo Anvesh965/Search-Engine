@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Ranks struct {
@@ -40,7 +39,7 @@ func ServerHome(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} Models.Webpage
 // @Router /v1/allpages [get]
-func GetAllWebPages(c *gin.Context, rdb *RealDBFunction) {
+func GetAllWebPages(c *gin.Context, rdb DBFunctions) {
 	allPages := rdb.AllPagesInCollection()
 	c.IndentedJSON(http.StatusOK, allPages)
 }
@@ -54,7 +53,7 @@ func GetAllWebPages(c *gin.Context, rdb *RealDBFunction) {
 // @Failure 206 {object} Message
 // @Failure 406 {object} Message
 // @Router /v1/savepage [post]
-func CreateWebPage(c *gin.Context, rdb *RealDBFunction) {
+func CreateWebPage(c *gin.Context, rdb DBFunctions) {
 	var webpage Models.Webpage
 
 	var msg Message
@@ -69,7 +68,7 @@ func CreateWebPage(c *gin.Context, rdb *RealDBFunction) {
 		return
 	}
 	webpage.ModifyKeysLength()
-	webpage.Id = primitive.NewObjectID()
+	log.Println(webpage)
 	rdb.UploadWebpage(&webpage)
 	c.IndentedJSON(http.StatusCreated, webpage)
 }
@@ -82,7 +81,7 @@ func CreateWebPage(c *gin.Context, rdb *RealDBFunction) {
 // @Success 200 {object} Ranks
 // @Failure 404 {object} Message
 // @Router /v1/querypages [post]
-func QueryHandle(c *gin.Context, rdb *RealDBFunction) {
+func QueryHandle(c *gin.Context, rdb DBFunctions) {
 	var webpage Models.Webpage
 	var msg Message
 	msg.Msg = "Enter a valid Content"
@@ -94,7 +93,7 @@ func QueryHandle(c *gin.Context, rdb *RealDBFunction) {
 	PageRanks := GeneratePageRanks(webpage.Keywords, rdb)
 	c.IndentedJSON(http.StatusOK, PageRanks)
 }
-func GeneratePageRanks(params []string, rdb *RealDBFunction) []Ranks {
+func GeneratePageRanks(params []string, rdb DBFunctions) []Ranks {
 	WebPages := rdb.Search(params)
 	var PageRank []Ranks
 	for _, webpage := range WebPages {

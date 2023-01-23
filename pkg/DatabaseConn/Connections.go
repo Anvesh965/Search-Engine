@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -51,6 +52,7 @@ func (rdb *RealDBFunction) Start() {
 
 func (rdb *RealDBFunction) UploadWebpage(webpage *Models.Webpage) {
 
+	webpage.Id = primitive.NewObjectID()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

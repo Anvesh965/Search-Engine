@@ -17,14 +17,14 @@ func GetRouter() *gin.Engine {
 	r.SetTrustedProxies(nil)
 	return r
 }
-func HandleRoutes(router *gin.Engine, rdb *RealDBFunction) {
+func HandleRoutes(router *gin.Engine, rdb DBFunctions) {
 
 	router.GET("/", StatusCheck)
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	HandleVersion1(router, rdb)
 
 }
-func HandleVersion1(router *gin.Engine, rdb *RealDBFunction) {
+func HandleVersion1(router *gin.Engine, rdb DBFunctions) {
 	var api1 = router.Group("/v1")
 	api1.GET("/", ServerHome)
 	api1.POST("/savepage", func(c *gin.Context) {
@@ -38,7 +38,7 @@ func HandleVersion1(router *gin.Engine, rdb *RealDBFunction) {
 	})
 }
 
-func StartServer(rdb *RealDBFunction) {
+func StartServer(rdb DBFunctions) {
 	router := GetRouter()
 	HandleRoutes(router, rdb)
 
