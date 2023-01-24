@@ -1,9 +1,7 @@
 package DatabaseConn
 
 import (
-	"context"
 	"errors"
-	"log"
 	mocks "search-engine/mocks/pkg/DatabaseConn"
 	"search-engine/pkg/Models"
 	"testing"
@@ -55,19 +53,18 @@ func TestUploadWebpageErrorCheck(t *testing.T) {
 func TestAllCollectionResultCheck(t *testing.T) {
 
 	mockColl := mocks.NewCollectionHelper(t)
-	docs := []interface{}{bson.M{"title": "anvesh", "keywords": []string{"a", "b"}}}
+	currID := primitive.NewObjectID()
+	docs := []interface{}{bson.M{"_id": currID, "title": "anvesh", "keywords": []string{"a", "b"}}}
 	dummy, _ := mongo.NewCursorFromDocuments(docs, nil, nil)
 	mockCursor1 := dummy
-	mockCursor2 := *dummy
+	// mockCursor2 := *dummy
 
-	expectedResult := []Models.Webpage{}
-	for mockCursor2.Next(context.TODO()) {
-		var test Models.Webpage
-		if err := mockCursor2.Decode(&test); err != nil {
-			log.Fatal(err)
-
-		}
-		// expectedResult = append(expectedResult, test)
+	expectedResult := []Models.Webpage{
+		Models.Webpage{
+			Id:       currID,
+			Title:    "anvesh",
+			Keywords: []string{"a", "b"},
+		},
 	}
 
 	mockColl.On("Find", mock.Anything, bson.M{}).Return(mockCursor1, nil)
@@ -96,23 +93,21 @@ func TestAllCollectionErrorCheck(t *testing.T) {
 
 func TestSearchingResultCheck(t *testing.T) {
 
+	keys := []string{"bmw", "microsoft", "paris"}
 	mockColl := mocks.NewCollectionHelper(t)
-
-	keys := []string{"tesla", "ford"}
-
-	docs := []interface{}{bson.M{"title": "anvesh", "keywords": []string{"a", "b"}}}
+	currID := primitive.NewObjectID()
+	docs := []interface{}{
+		bson.M{"_id": currID, "title": "twitter", "keywords": []string{"tesla", "ford", "BMW"}},
+	}
 	dummy, _ := mongo.NewCursorFromDocuments(docs, nil, nil)
 	mockCursor1 := dummy
-	mockCursor2 := *dummy
 
-	expectedResult := []Models.Webpage{}
-	for mockCursor2.Next(context.TODO()) {
-		var test Models.Webpage
-		if err := mockCursor2.Decode(&test); err != nil {
-			log.Fatal(err)
-
-		}
-		// expectedResult = append(expectedResult, test)
+	expectedResult := []Models.Webpage{
+		Models.Webpage{
+			Id:       currID,
+			Title:    "twitter",
+			Keywords: []string{"tesla", "ford", "BMW"},
+		},
 	}
 
 	mockColl.On("Find", mock.Anything, mock.Anything).Return(mockCursor1, nil)
