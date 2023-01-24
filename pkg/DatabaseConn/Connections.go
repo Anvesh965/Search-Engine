@@ -75,7 +75,6 @@ func (rdb *RealDBFunction) Search(keys []string) []Models.Webpage {
 		each := bson.M{"keywords": bson.M{"$regex": "\\b" + key + "\\b", "$options": "i"}}
 		orOptions = append(orOptions, each)
 	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	// filter := bson.M{"keywords": bson.M{"$in": keys}}

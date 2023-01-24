@@ -1,7 +1,6 @@
 package Controllers
 
 import (
-	"log"
 	"net/http"
 	. "search-engine/pkg/DatabaseConn"
 	"search-engine/pkg/Models"
@@ -50,17 +49,21 @@ func GetAllWebPages(c *gin.Context, rdb DBFunctions) {
 // @Produce json
 // @Param Page body Models.Page true "The input webpage details"
 // @Success 201 {object} Models.Webpage
+// @Failure 400 {object} Message
 // @Failure 206 {object} Message
-// @Failure 406 {object} Message
 // @Router /v1/savepage [post]
 func CreateWebPage(c *gin.Context, rdb DBFunctions) {
 	var webpage Models.Webpage
 
 	var msg Message
 	msg.Msg = "Enter a valid Content"
-	err := c.BindJSON(&webpage)
-	if err != nil {
-		c.IndentedJSON(http.StatusNotAcceptable, msg)
+	if c.Request.Body == nil {
+		c.IndentedJSON(http.StatusBadRequest, msg)
+		return
+	}
+
+	if err := c.BindJSON(&webpage); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, msg)
 		return
 	}
 	if webpage.Check() {
@@ -68,7 +71,6 @@ func CreateWebPage(c *gin.Context, rdb DBFunctions) {
 		return
 	}
 	webpage.ModifyKeysLength()
-	log.Println(webpage)
 	rdb.UploadWebpage(&webpage)
 	c.IndentedJSON(http.StatusCreated, webpage)
 }
@@ -79,15 +81,15 @@ func CreateWebPage(c *gin.Context, rdb DBFunctions) {
 // @Produce json
 // @Param data body Models.Keys true "The input Keyword list"
 // @Success 200 {object} Ranks
-// @Failure 404 {object} Message
+// @Failure 400 {object} Message
 // @Router /v1/querypages [post]
 func QueryHandle(c *gin.Context, rdb DBFunctions) {
 	var webpage Models.Webpage
 	var msg Message
 	msg.Msg = "Enter a valid Content"
-	log.Println(c.Params)
+
 	if err := c.BindJSON(&webpage); err != nil {
-		c.IndentedJSON(http.StatusNoContent, msg)
+		c.IndentedJSON(http.StatusBadRequest, msg)
 		return
 	}
 	PageRanks := GeneratePageRanks(webpage.Keywords, rdb)
