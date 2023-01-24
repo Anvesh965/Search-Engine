@@ -3,6 +3,7 @@ package Controllers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	mocks "search-engine/mocks/pkg/DatabaseConn"
 )
@@ -22,7 +24,7 @@ func TestGetAllWebPages(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	rdbMock := mocks.NewDBFunctions(t)
-	rdbMock.On("AllPagesInCollection").Return([]Models.Webpage{})
+	rdbMock.On("AllPagesInCollection").Return([]Models.Webpage{}, errors.New("error while fetching results"))
 	router.GET("/allpages", func(c *gin.Context) {
 		GetAllWebPages(c, rdbMock)
 	})
@@ -59,7 +61,7 @@ func TestCreateWebPage(t *testing.T) {
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusPartialContent, resp.Code)
 
-	//test for body nil sttaus code 400
+	//test for body nil staus code 400
 	input = `{"Title":"123","Keys":["123","234"]}`
 	req, err = http.NewRequest("POST", "/savepage", nil)
 	if err != nil {
@@ -79,7 +81,7 @@ func TestCreateWebPage(t *testing.T) {
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
-	rdbMock.On("UploadWebpage", mock.Anything).Return()
+	rdbMock.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
 	input = `"title":"page","keywords":["wrd1"]`
 	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
 
@@ -118,7 +120,7 @@ func TestQueryHandle(t *testing.T) {
 		{Id: primitive.NewObjectID(), Title: "page-3", Keywords: []string{"Car", "Toyota", "Mock"}},
 		{Id: primitive.NewObjectID(), Title: "page-4", Keywords: []string{"KIA", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-5", Keywords: []string{"", "Review", "", "Car"}},
-	})
+	}, errors.New("error while fetching results"))
 	keys := Models.Keys{Keywords: []string{"Car"}}
 	inputjson, _ := json.Marshal(keys)
 	req, err = http.NewRequest("POST", "/querypages", bytes.NewBuffer([]byte(inputjson)))
@@ -172,7 +174,7 @@ func TestGenerateRanks(t *testing.T) {
 		{Id: primitive.NewObjectID(), Title: "page-3", Keywords: []string{"Car", "Toyota", "Mock"}},
 		{Id: primitive.NewObjectID(), Title: "page-4", Keywords: []string{"KIA", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-5", Keywords: []string{"", "Review", "", "Car"}},
-	})
+	}, errors.New("error while fetching results"))
 	params := []string{"Car"}
 	expected := []Ranks{
 		{PageName: "page-3", Value: 100},

@@ -2,6 +2,39 @@ SHELL=cmd.exe
 
 SEARCH_BINARY=Dockerfile
 
+dirr := ./pkg/DatabaseConn
+# mainDir := ./cmd/main.go
+
+# coverage: $(dirr)
+# 	go test $(dirr) -cover
+
+# test: $(dirr)
+# 	go test $(dirr)
+# test-v: $(dirr)
+# 	go test $(dirr) -v
+
+# run: $(mainDir)
+# 	go run $(mainDir)
+
+# html:
+# 	rm -f coverage.out
+# 	go test -coverprofile=coverage.out $(dirr)
+# 	go tool cover -html=coverage.out 
+# 	rm -r coverage.out
+
+test: $(dirr)
+
+	go test ./pkg/Controllers $(dirr) -v -cover
+
+cover:
+
+	go test -coverprofile coverage.out ./pkg/Controllers $(dirr)
+
+	go tool cover -html coverage.out
+
+run:
+	go run ./cmd/main.go
+
 
 ## up: starting app and mongo container with docker compose 
 
@@ -31,13 +64,6 @@ swag:
 	swag init -d ./cmd/ -o ./docs --parseDependency
 
 	@echo done with swagger docs
-test:
 
-	go test ./pkg/Controllers -v -cover
 
-cover:
-
-	go test -coverprofile coverage.out ./pkg/Controllers
-
-	go tool cover -html coverage.out
 

@@ -39,7 +39,7 @@ func ServerHome(c *gin.Context) {
 // @Success 200 {object} Models.Webpage
 // @Router /v1/allpages [get]
 func GetAllWebPages(c *gin.Context, rdb DBFunctions) {
-	allPages := rdb.AllPagesInCollection()
+	allPages, _ := rdb.AllPagesInCollection()
 	c.IndentedJSON(http.StatusOK, allPages)
 }
 
@@ -96,7 +96,7 @@ func QueryHandle(c *gin.Context, rdb DBFunctions) {
 	c.IndentedJSON(http.StatusOK, PageRanks)
 }
 func GeneratePageRanks(params []string, rdb DBFunctions) []Ranks {
-	WebPages := rdb.Search(params)
+	WebPages, _ := rdb.Search(params)
 	var PageRank []Ranks
 	for _, webpage := range WebPages {
 		score := GetScore(webpage.Keywords, params)
