@@ -31,3 +31,13 @@ swag:
 	swag init -d ./cmd/ -o ./docs --parseDependency
 
 	@echo done with swagger docs
+test:
+
+	go test ./pkg/Controllers -v -cover
+
+cover:
+
+	go test -coverprofile coverage.out ./pkg/Controllers
+
+	go tool cover -html coverage.out
+
