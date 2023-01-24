@@ -14,7 +14,7 @@ git clone https://github.com/Anvesh965/Search-Engine.git "Search Engine"
 
 ```
 cd "Search Engine"
-docker-compose up --build
+make up
 ```
 
 ### **Step 3 :** Testing API
@@ -63,7 +63,7 @@ docker-compose up --build
        "keywords": ["tesla", "ford", "wan"]
      }
      ```
-    5. Swagger UI 
+  5. Swagger UI 
      ```
     http://localhost:4000/docs/index.html
      ```
@@ -71,5 +71,5 @@ docker-compose up --build
 ### **Step 4 :** To stop running containers
 
 ```
- docker-compose down
+ make down
 ```
