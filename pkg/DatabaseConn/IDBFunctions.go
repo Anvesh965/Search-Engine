@@ -1,10 +1,13 @@
 package DatabaseConn
 
-import "search-engine/pkg/Models"
+import (
+	"search-engine/pkg/Models"
+
+	"go.mongodb.org/mongo-driver/mongo"
+)
 
 type DBFunctions interface {
-	Start()
-	UploadWebpage(webpage *Models.Webpage)
-	Search(keys []string) []Models.Webpage
-	AllPagesInCollection() []Models.Webpage
+	UploadWebpage(webpage *Models.Webpage) (*mongo.InsertOneResult, error)
+	Search(keys []string) ([]Models.Webpage, error)
+	AllPagesInCollection() ([]Models.Webpage, error)
 }

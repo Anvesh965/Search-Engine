@@ -15,12 +15,27 @@ import (
 	. "search-engine/cmd/config"
 )
 
-var collPtr *mongo.Collection
-
-type RealDBFunction struct {
+type CollectionHelper interface {
+	InsertOne(ctx context.Context, document interface{},
+		opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
+	Find(ctx context.Context, filter interface{},
+		opts ...*options.FindOptions) (cur *mongo.Cursor, err error)
 }
 
-func (rdb *RealDBFunction) Start() {
+// type API struct {
+// 	coll CollectionHelper
+// 	ctx  context.Context
+// }
+
+type RealDBFunction struct {
+	collPtr CollectionHelper
+}
+
+func NewDBFunctions(ch CollectionHelper) DBFunctions {
+	return &RealDBFunction{collPtr: ch}
+}
+
+func Start() CollectionHelper {
 
 	// Connecting to MongoDB database
 
@@ -47,27 +62,32 @@ func (rdb *RealDBFunction) Start() {
 
 	// creating database and collections
 
-	collPtr = client.Database(Config.Database.DBName).Collection(Config.Database.Collection)
+	myCollPtr := client.Database(Config.Database.DBName).Collection(Config.Database.Collection)
+
+	return myCollPtr
 }
 
-func (rdb *RealDBFunction) UploadWebpage(webpage *Models.Webpage) {
+func (rdb *RealDBFunction) UploadWebpage(webpage *Models.Webpage) (*mongo.InsertOneResult, error) {
 
 	webpage.Id = primitive.NewObjectID()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// adding document to webpages colletion
-	result, err := collPtr.InsertOne(ctx, webpage)
+	result, err := rdb.collPtr.InsertOne(ctx, webpage)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
 
 	log.Println("Record inserted with id:", result.InsertedID)
 
+	return result, err
+
 }
 
-func (rdb *RealDBFunction) Search(keys []string) []Models.Webpage {
+func (rdb *RealDBFunction) Search(keys []string) ([]Models.Webpage, error) {
 
 	var orOptions []bson.M
 
@@ -79,50 +99,51 @@ func (rdb *RealDBFunction) Search(keys []string) []Models.Webpage {
 	defer cancel()
 	// filter := bson.M{"keywords": bson.M{"$in": keys}}
 	filter := bson.M{"$or": orOptions}
-	cursor, err := collPtr.Find(ctx, filter)
+	cursor, err := rdb.collPtr.Find(ctx, filter)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
+	matchedRecords := []Models.Webpage{}
 
-	// var matchedRecords []primitive.M
-	var matchedRecords []Models.Webpage
 	for cursor.Next(ctx) {
 
-		// var webpage bson.M
 		var webpage Models.Webpage
 		if err := cursor.Decode(&webpage); err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return matchedRecords, err
 		}
 
 		matchedRecords = append(matchedRecords, webpage)
 	}
 
-	return matchedRecords
+	return matchedRecords, err
 
 }
 
-func (rdb *RealDBFunction) AllPagesInCollection() []Models.Webpage {
+func (rdb *RealDBFunction) AllPagesInCollection() ([]Models.Webpage, error) {
 	ctx, cance := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cance()
 
 	filter := bson.M{}
 
-	cursor, err := collPtr.Find(ctx, filter)
+	cursor, err := rdb.collPtr.Find(ctx, filter)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil, err
 	}
-
-	var allpages []Models.Webpage
+	allpages := []Models.Webpage{}
 
 	for cursor.Next(ctx) {
 		var webpage Models.Webpage
 		if err := cursor.Decode(&webpage); err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return allpages, err
 		}
 		allpages = append(allpages, webpage)
 	}
-	return allpages
+	return allpages, err
 
 }

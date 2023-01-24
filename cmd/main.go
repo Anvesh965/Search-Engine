@@ -16,7 +16,8 @@ import (
 // @query.collection.format multi
 func main() {
 	LoadConfig()
-	rdb := &DatabaseConn.RealDBFunction{}
-	rdb.Start()
+	// rdb := &DatabaseConn.RealDBFunction{}
+	ch := DatabaseConn.Start()
+	rdb := DatabaseConn.NewDBFunctions(ch)
 	StartServer(rdb)
 }
