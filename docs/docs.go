@@ -10,15 +10,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -86,8 +78,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/Controllers.Ranks"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/Controllers.Message"
                         }
@@ -129,8 +121,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/Controllers.Message"
                         }
                     },
-                    "406": {
-                        "description": "Not Acceptable",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/Controllers.Message"
                         }
@@ -213,8 +205,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:4000",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Go + Gin Search-Engine-API",
-	Description:      "This is a sample server todo server. You can visit the GitHub repository at https://github.com/LordGhostX/swag-gin-demo",
+	Title:            "Search-Engine-API",
+	Description:      "Search-Engine-Rest-API. You can visit the GitHub repository at https://github.com/Anvesh965/Search-Engine",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

@@ -1,0 +1,27 @@
+mode: set
+search-engine/pkg/Controllers/Controllers.go:23.34,25.2 1 1
+search-engine/pkg/Controllers/Controllers.go:32.33,35.2 2 1
+search-engine/pkg/Controllers/Controllers.go:42.54,45.2 2 1
+search-engine/pkg/Controllers/Controllers.go:56.53,61.27 4 1
+search-engine/pkg/Controllers/Controllers.go:66.2,66.45 1 1
+search-engine/pkg/Controllers/Controllers.go:70.2,70.21 1 1
+search-engine/pkg/Controllers/Controllers.go:74.2,77.45 4 1
+search-engine/pkg/Controllers/Controllers.go:61.27,64.3 2 1
+search-engine/pkg/Controllers/Controllers.go:66.45,69.3 2 1
+search-engine/pkg/Controllers/Controllers.go:70.21,73.3 2 1
+search-engine/pkg/Controllers/Controllers.go:88.51,94.45 5 1
+search-engine/pkg/Controllers/Controllers.go:98.2,99.42 2 1
+search-engine/pkg/Controllers/Controllers.go:94.45,97.3 2 1
+search-engine/pkg/Controllers/Controllers.go:101.66,104.35 3 1
+search-engine/pkg/Controllers/Controllers.go:108.2,108.47 1 1
+search-engine/pkg/Controllers/Controllers.go:111.2,114.17 3 1
+search-engine/pkg/Controllers/Controllers.go:104.35,107.3 2 1
+search-engine/pkg/Controllers/Controllers.go:108.47,110.3 1 1
+search-engine/pkg/Controllers/Controllers.go:117.46,120.37 2 1
+search-engine/pkg/Controllers/Controllers.go:128.2,128.12 1 1
+search-engine/pkg/Controllers/Controllers.go:120.37,121.36 1 1
+search-engine/pkg/Controllers/Controllers.go:121.36,122.49 1 1
+search-engine/pkg/Controllers/Controllers.go:122.49,124.10 2 1
+search-engine/pkg/Controllers/Controllers.go:130.24,131.12 1 1
+search-engine/pkg/Controllers/Controllers.go:134.2,134.10 1 1
+search-engine/pkg/Controllers/Controllers.go:131.12,133.3 1 1

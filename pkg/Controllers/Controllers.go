@@ -1,7 +1,6 @@
 package Controllers
 
 import (
-	"log"
 	"net/http"
 	. "search-engine/pkg/DatabaseConn"
 	"search-engine/pkg/Models"
@@ -9,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Ranks struct {
@@ -18,7 +16,7 @@ type Ranks struct {
 }
 type Message struct {
 	Msg     string `json:"message"`
-	Version string `json:"version",omitempty`
+	Version string `json:"version,omitempty"`
 }
 
 func StatusCheck(c *gin.Context) {
@@ -40,8 +38,8 @@ func ServerHome(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} Models.Webpage
 // @Router /v1/allpages [get]
-func GetAllWebPages(c *gin.Context) {
-	allPages := AllPagesInCollection()
+func GetAllWebPages(c *gin.Context, rdb DBFunctions) {
+	allPages := rdb.AllPagesInCollection()
 	c.IndentedJSON(http.StatusOK, allPages)
 }
 
@@ -51,17 +49,21 @@ func GetAllWebPages(c *gin.Context) {
 // @Produce json
 // @Param Page body Models.Page true "The input webpage details"
 // @Success 201 {object} Models.Webpage
+// @Failure 400 {object} Message
 // @Failure 206 {object} Message
-// @Failure 406 {object} Message
 // @Router /v1/savepage [post]
-func CreateWebPage(c *gin.Context) {
+func CreateWebPage(c *gin.Context, rdb DBFunctions) {
 	var webpage Models.Webpage
 
 	var msg Message
 	msg.Msg = "Enter a valid Content"
-	err := c.BindJSON(&webpage)
-	if err != nil {
-		c.IndentedJSON(http.StatusNotAcceptable, msg)
+	if c.Request.Body == nil {
+		c.IndentedJSON(http.StatusBadRequest, msg)
+		return
+	}
+
+	if err := c.BindJSON(&webpage); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, msg)
 		return
 	}
 	if webpage.Check() {
@@ -69,8 +71,7 @@ func CreateWebPage(c *gin.Context) {
 		return
 	}
 	webpage.ModifyKeysLength()
-	webpage.Id = primitive.NewObjectID()
-	UploadWebpage(&webpage)
+	rdb.UploadWebpage(&webpage)
 	c.IndentedJSON(http.StatusCreated, webpage)
 }
 
@@ -80,22 +81,22 @@ func CreateWebPage(c *gin.Context) {
 // @Produce json
 // @Param data body Models.Keys true "The input Keyword list"
 // @Success 200 {object} Ranks
-// @Failure 404 {object} Message
+// @Failure 400 {object} Message
 // @Router /v1/querypages [post]
-func QueryHandle(c *gin.Context) {
+func QueryHandle(c *gin.Context, rdb DBFunctions) {
 	var webpage Models.Webpage
 	var msg Message
 	msg.Msg = "Enter a valid Content"
-	log.Println(c.Params)
+
 	if err := c.BindJSON(&webpage); err != nil {
-		c.IndentedJSON(http.StatusNoContent, msg)
+		c.IndentedJSON(http.StatusBadRequest, msg)
 		return
 	}
-	PageRanks := GeneratePageRanks(webpage.Keywords)
+	PageRanks := GeneratePageRanks(webpage.Keywords, rdb)
 	c.IndentedJSON(http.StatusOK, PageRanks)
 }
-func GeneratePageRanks(params []string) []Ranks {
-	WebPages := Search(params)
+func GeneratePageRanks(params []string, rdb DBFunctions) []Ranks {
+	WebPages := rdb.Search(params)
 	var PageRank []Ranks
 	for _, webpage := range WebPages {
 		score := GetScore(webpage.Keywords, params)
@@ -124,7 +125,7 @@ func GetScore(Keywords, params []string) int {
 	return ans
 }
 func min(a, b int) int {
-	if a < b {
+	if a <= b {
 		return a
 	}
 	return b
