@@ -2,10 +2,10 @@ package main
 
 import (
 	. "search-engine/cmd/config"
-	"search-engine/pkg/DatabaseConn"
-	. "search-engine/pkg/Routes"
-
 	_ "search-engine/docs"
+	. "search-engine/pkg/Controllers"
+	. "search-engine/pkg/DatabaseConn"
+	. "search-engine/pkg/Routes"
 )
 
 // @title Search-Engine-API
@@ -17,7 +17,8 @@ import (
 func main() {
 	LoadConfig()
 	// rdb := &DatabaseConn.RealDBFunction{}
-	ch := DatabaseConn.Start()
-	rdb := DatabaseConn.NewDBFunctions(ch)
-	StartServer(rdb)
+	ch := Start()
+	pgService := NewPageService(ch)
+	pgc := NewPageController(pgService)
+	StartServer(pgc)
 }

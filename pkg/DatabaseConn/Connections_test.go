@@ -25,7 +25,7 @@ func TestUploadWebpageResultCheck(t *testing.T) {
 
 	mockColl.On("InsertOne", mock.Anything, &testpage).Return(&mongo.InsertOneResult{}, nil)
 
-	mockApiColl := NewDBFunctions(mockColl)
+	mockApiColl := NewPageService(mockColl)
 	result, err := mockApiColl.UploadWebpage(&testpage)
 
 	assert.Nil(t, err)
@@ -42,7 +42,7 @@ func TestUploadWebpageErrorCheck(t *testing.T) {
 
 	mockColl.On("InsertOne", mock.Anything, &testpage).Return(nil, errors.New("error-while-inserting"))
 
-	mockApiColl := NewDBFunctions(mockColl)
+	mockApiColl := NewPageService(mockColl)
 	_, err := mockApiColl.UploadWebpage(&testpage)
 
 	assert.NotNil(t, err)
@@ -72,7 +72,7 @@ func TestAllCollectionResultCheck(t *testing.T) {
 
 	mockColl.On("Find", mock.Anything, bson.M{}).Return(mockCursor1, nil)
 
-	mockApi := NewDBFunctions(mockColl)
+	mockApi := NewPageService(mockColl)
 	result, err := mockApi.AllPagesInCollection()
 
 	assert.Nil(t, err)
@@ -86,7 +86,7 @@ func TestAllCollectionErrorCheck(t *testing.T) {
 
 	mockColl.On("Find", mock.Anything, bson.M{}).Return(nil, errors.New("error while fetching records"))
 
-	mockApi := NewDBFunctions(mockColl)
+	mockApi := NewPageService(mockColl)
 	_, err := mockApi.AllPagesInCollection()
 
 	assert.NotNil(t, err)
@@ -117,7 +117,7 @@ func TestSearchingResultCheck(t *testing.T) {
 
 	mockColl.On("Find", mock.Anything, mock.Anything).Return(mockCursor1, nil)
 
-	mockApi := NewDBFunctions(mockColl)
+	mockApi := NewPageService(mockColl)
 	result, err := mockApi.Search(keys)
 
 	assert.Nil(t, err)
@@ -132,7 +132,7 @@ func TestSearchingErrorCheck(t *testing.T) {
 
 	mockColl.On("Find", mock.Anything, mock.Anything).Return(nil, errors.New("error while fetching records"))
 
-	mockApi := NewDBFunctions(mockColl)
+	mockApi := NewPageService(mockColl)
 	_, err := mockApi.Search(keys)
 
 	assert.NotNil(t, err)

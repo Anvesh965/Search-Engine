@@ -16,17 +16,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	mocks "search-engine/mocks/pkg/DatabaseConn"
+	mockService "search-engine/mocks/pkg/services"
 )
 
 func TestGetAllWebPages(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	rdbMock := mocks.NewDBFunctions(t)
-	rdbMock.On("AllPagesInCollection").Return([]Models.Webpage{}, errors.New("error while fetching results"))
-	router.GET("/allpages", func(c *gin.Context) {
-		GetAllWebPages(c, rdbMock)
-	})
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	mockPageService.On("AllPagesInCollection").Return([]Models.Webpage{}, errors.New("error while fetching results"))
+	router.GET("/allpages", pageController.GetAllWebPages)
 
 	req := httptest.NewRequest("GET", "/allpages", nil)
 
@@ -35,17 +34,16 @@ func TestGetAllWebPages(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
+
 func TestCreateWebPage(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	rdbMock := mocks.NewDBFunctions(t)
-
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
 	//To Test 206 status code when body is there but required data is not mentioned
 	//TestCase-1
 	//rdbMock.On("UploadWebpage").Return([]Models.Webpage{})
-	router.POST("/savepage", func(c *gin.Context) {
-		CreateWebPage(c, rdbMock)
-	})
+	router.POST("/savepage", pageController.CreateWebPage)
 	input := `{}`
 	req := httptest.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
 
@@ -71,7 +69,7 @@ func TestCreateWebPage(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 	//TestCase-4
-	rdbMock.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
+	mockPageService.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
 	input = `"title":"page","keywords":["wrd1"]`
 	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
 
@@ -88,10 +86,9 @@ func TestQueryHandle(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	rdbMock := mocks.NewDBFunctions(t)
-	router.POST("/querypages", func(c *gin.Context) {
-		QueryHandle(c, rdbMock)
-	})
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	router.POST("/querypages", pageController.QueryHandle)
 
 	req := httptest.NewRequest("POST", "/querypages", nil)
 
@@ -100,7 +97,7 @@ func TestQueryHandle(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
 	assert.NotNil(t, resp.Body)
 
-	rdbMock.On("Search", mock.Anything).Return([]Models.Webpage{
+	mockPageService.On("Search", mock.Anything).Return([]Models.Webpage{
 		{Id: primitive.NewObjectID(), Title: "page-1", Keywords: []string{"Ford", "Review", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-2", Keywords: []string{"BMW", "Gin", "", "GO", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-3", Keywords: []string{"Car", "Toyota", "Mock"}},
@@ -140,7 +137,10 @@ func TestHomepageHandler(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-	r.GET("/v1/", ServerHome)
+
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	r.GET("/v1/", pageController.ServerHome)
 	req := httptest.NewRequest("GET", "/v1/", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -151,8 +151,9 @@ func TestHomepageHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 func TestGenerateRanks(t *testing.T) {
-	rdbMock := mocks.NewDBFunctions(t)
-	rdbMock.On("Search", mock.Anything).Return([]Models.Webpage{
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	mockPageService.On("Search", mock.Anything).Return([]Models.Webpage{
 		{Id: primitive.NewObjectID(), Title: "page-1", Keywords: []string{"Ford", "Review", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-2", Keywords: []string{"BMW", "Gin", "", "GO", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-3", Keywords: []string{"Car", "Toyota", "Mock"}},
@@ -167,7 +168,7 @@ func TestGenerateRanks(t *testing.T) {
 		{PageName: "page-5", Value: 70},
 		{PageName: "page-2", Value: 60},
 	}
-	actual := GeneratePageRanks(params, rdbMock)
+	actual := GeneratePageRanks(params, pageController)
 	assert.Equal(t, expected, actual)
 }
 func TestGetScore(t *testing.T) {

@@ -3,7 +3,6 @@ package Routes
 import (
 	. "search-engine/cmd/config"
 	. "search-engine/pkg/Controllers"
-	. "search-engine/pkg/DatabaseConn"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -17,30 +16,25 @@ func GetRouter() *gin.Engine {
 	r.SetTrustedProxies(nil)
 	return r
 }
-func HandleRoutes(router *gin.Engine, rdb DBFunctions) {
+func HandleRoutes(router *gin.Engine, pgc *PageController) {
 
 	router.GET("/", StatusCheck)
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	HandleVersion1(router, rdb)
+	HandleVersion1(router, pgc)
 
 }
-func HandleVersion1(router *gin.Engine, rdb DBFunctions) {
+func HandleVersion1(router *gin.Engine, pgc *PageController) {
 	var api1 = router.Group("/v1")
-	api1.GET("/", ServerHome)
-	api1.POST("/savepage", func(c *gin.Context) {
-		CreateWebPage(c, rdb)
-	})
-	api1.POST("/querypages", func(c *gin.Context) {
-		QueryHandle(c, rdb)
-	})
-	api1.GET("/allpages", func(c *gin.Context) {
-		GetAllWebPages(c, rdb)
-	})
+
+	api1.GET("/", pgc.ServerHome)
+	api1.POST("/savepage", pgc.CreateWebPage)
+	api1.POST("/querypages", pgc.QueryHandle)
+	api1.GET("/allpages", pgc.GetAllWebPages)
 }
 
-func StartServer(rdb DBFunctions) {
+func StartServer(pgc *PageController) {
 	router := GetRouter()
-	HandleRoutes(router, rdb)
+	HandleRoutes(router, pgc)
 
 	url := ":" + strconv.Itoa(Config.Server.Port)
 	router.Run(url)
