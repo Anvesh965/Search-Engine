@@ -3,7 +3,6 @@ package DatabaseConn
 import (
 	"context"
 	"log"
-	"search-engine/pkg/Models"
 	"strconv"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	. "search-engine/cmd/config"
+	"search-engine/pkg/Models"
 )
 
 type CollectionHelper interface {
@@ -20,19 +20,6 @@ type CollectionHelper interface {
 		opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 	Find(ctx context.Context, filter interface{},
 		opts ...*options.FindOptions) (cur *mongo.Cursor, err error)
-}
-
-// type API struct {
-// 	coll CollectionHelper
-// 	ctx  context.Context
-// }
-
-type RealDBFunction struct {
-	collPtr CollectionHelper
-}
-
-func NewDBFunctions(ch CollectionHelper) DBFunctions {
-	return &RealDBFunction{collPtr: ch}
 }
 
 func Start() CollectionHelper {
@@ -67,14 +54,22 @@ func Start() CollectionHelper {
 	return myCollPtr
 }
 
-func (rdb *RealDBFunction) UploadWebpage(webpage *Models.Webpage) (*mongo.InsertOneResult, error) {
+type PageServiceStruct struct {
+	collPtr CollectionHelper
+}
+
+func NewPageService(ch CollectionHelper) *PageServiceStruct {
+	return &PageServiceStruct{collPtr: ch}
+}
+
+func (pgs *PageServiceStruct) UploadWebpage(webpage *Models.Webpage) (*mongo.InsertOneResult, error) {
 
 	webpage.Id = primitive.NewObjectID()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// adding document to webpages colletion
-	result, err := rdb.collPtr.InsertOne(ctx, webpage)
+	result, err := pgs.collPtr.InsertOne(ctx, webpage)
 
 	if err != nil {
 		log.Println(err)
@@ -87,7 +82,7 @@ func (rdb *RealDBFunction) UploadWebpage(webpage *Models.Webpage) (*mongo.Insert
 
 }
 
-func (rdb *RealDBFunction) Search(keys []string) ([]Models.Webpage, error) {
+func (pgs *PageServiceStruct) Search(keys []string) ([]Models.Webpage, error) {
 
 	var orOptions []bson.M
 
@@ -99,7 +94,7 @@ func (rdb *RealDBFunction) Search(keys []string) ([]Models.Webpage, error) {
 	defer cancel()
 	// filter := bson.M{"keywords": bson.M{"$in": keys}}
 	filter := bson.M{"$or": orOptions}
-	cursor, err := rdb.collPtr.Find(ctx, filter)
+	cursor, err := pgs.collPtr.Find(ctx, filter)
 
 	if err != nil {
 		log.Println(err)
@@ -122,13 +117,13 @@ func (rdb *RealDBFunction) Search(keys []string) ([]Models.Webpage, error) {
 
 }
 
-func (rdb *RealDBFunction) AllPagesInCollection() ([]Models.Webpage, error) {
+func (pgs *PageServiceStruct) AllPagesInCollection() ([]Models.Webpage, error) {
 	ctx, cance := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cance()
 
 	filter := bson.M{}
 
-	cursor, err := rdb.collPtr.Find(ctx, filter)
+	cursor, err := pgs.collPtr.Find(ctx, filter)
 
 	if err != nil {
 		log.Println(err)
@@ -145,5 +140,4 @@ func (rdb *RealDBFunction) AllPagesInCollection() ([]Models.Webpage, error) {
 		allpages = append(allpages, webpage)
 	}
 	return allpages, err
-
 }
