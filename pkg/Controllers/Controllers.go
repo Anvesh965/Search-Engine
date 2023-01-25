@@ -57,10 +57,6 @@ func CreateWebPage(c *gin.Context, rdb DBFunctions) {
 
 	var msg Message
 	msg.Msg = "Enter a valid Content"
-	if c.Request.Body == nil {
-		c.IndentedJSON(http.StatusBadRequest, msg)
-		return
-	}
 
 	if err := c.BindJSON(&webpage); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, msg)

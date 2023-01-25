@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"search-engine/pkg/Models"
@@ -29,18 +28,12 @@ func TestGetAllWebPages(t *testing.T) {
 		GetAllWebPages(c, rdbMock)
 	})
 
-	req, err := http.NewRequest("GET", "/allpages", nil)
-	if err != nil {
-		log.Println(err)
-	}
+	req := httptest.NewRequest("GET", "/allpages", nil)
+
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
-	// Check response
 	assert.Equal(t, http.StatusOK, resp.Code)
-	// Check if mock function was called
-	//rdbMock.AssertExpectations(t)
-
 }
 func TestCreateWebPage(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -48,48 +41,43 @@ func TestCreateWebPage(t *testing.T) {
 	rdbMock := mocks.NewDBFunctions(t)
 
 	//To Test 206 status code when body is there but required data is not mentioned
+	//TestCase-1
 	//rdbMock.On("UploadWebpage").Return([]Models.Webpage{})
 	router.POST("/savepage", func(c *gin.Context) {
 		CreateWebPage(c, rdbMock)
 	})
 	input := `{}`
-	req, err := http.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
-	if err != nil {
-		log.Println(err)
-	}
+	req := httptest.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
+
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusPartialContent, resp.Code)
 
 	//test for body nil staus code 400
-	input = `{"Title":"123","Keys":["123","234"]}`
-	req, err = http.NewRequest("POST", "/savepage", nil)
-	if err != nil {
-		log.Println(err)
-	}
+	//TestCase-2
+	req = httptest.NewRequest("POST", "/savepage", nil)
+
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 	//check when BindJson error occurs statuscode 400
+	//TestCase-3
 	input = `"user":"name","password":"123","number":123,"mail":"email"`
-	req, err = http.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
-	if err != nil {
-		log.Println(err)
-	}
+	req = httptest.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
+
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
+	//TestCase-4
 	rdbMock.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
 	input = `"title":"page","keywords":["wrd1"]`
 	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
 
 	jsonInput, _ := json.Marshal(webpage)
-	req, err = http.NewRequest("POST", "/savepage", bytes.NewBuffer(jsonInput))
-	if err != nil {
-		log.Println(err)
-	}
+	req = httptest.NewRequest("POST", "/savepage", bytes.NewBuffer(jsonInput))
+
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusCreated, resp.Code)
@@ -105,10 +93,8 @@ func TestQueryHandle(t *testing.T) {
 		QueryHandle(c, rdbMock)
 	})
 
-	req, err := http.NewRequest("POST", "/querypages", nil)
-	if err != nil {
-		log.Println(err)
-	}
+	req := httptest.NewRequest("POST", "/querypages", nil)
+
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
@@ -123,10 +109,8 @@ func TestQueryHandle(t *testing.T) {
 	}, errors.New("error while fetching results"))
 	keys := Models.Keys{Keywords: []string{"Car"}}
 	inputjson, _ := json.Marshal(keys)
-	req, err = http.NewRequest("POST", "/querypages", bytes.NewBuffer([]byte(inputjson)))
-	if err != nil {
-		log.Println(err)
-	}
+	req = httptest.NewRequest("POST", "/querypages", bytes.NewBuffer([]byte(inputjson)))
+
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
@@ -139,7 +123,7 @@ func TestStatusCheck(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 	r.GET("/", StatusCheck)
-	req, _ := http.NewRequest("GET", "/", nil)
+	req := httptest.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -157,7 +141,7 @@ func TestHomepageHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 	r.GET("/v1/", ServerHome)
-	req, _ := http.NewRequest("GET", "/v1/", nil)
+	req := httptest.NewRequest("GET", "/v1/", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
