@@ -60,7 +60,7 @@ func TestAllCollectionResultCheck(t *testing.T) {
 	// mockCursor2 := *dummy
 
 	expectedResult := []Models.Webpage{
-		Models.Webpage{
+		{
 			Id:       currID,
 			Title:    "anvesh",
 			Keywords: []string{"a", "b"},
@@ -103,7 +103,7 @@ func TestSearchingResultCheck(t *testing.T) {
 	mockCursor1 := dummy
 
 	expectedResult := []Models.Webpage{
-		Models.Webpage{
+		{
 			Id:       currID,
 			Title:    "twitter",
 			Keywords: []string{"tesla", "ford", "BMW"},
