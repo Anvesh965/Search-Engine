@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"search-engine/pkg/Models"
@@ -17,79 +16,66 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	mocks "search-engine/mocks/pkg/DatabaseConn"
+	mockService "search-engine/mocks/pkg/services"
 )
 
 func TestGetAllWebPages(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	rdbMock := mocks.NewDBFunctions(t)
-	rdbMock.On("AllPagesInCollection").Return([]Models.Webpage{}, errors.New("error while fetching results"))
-	router.GET("/allpages", func(c *gin.Context) {
-		GetAllWebPages(c, rdbMock)
-	})
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	mockPageService.On("AllPagesInCollection").Return([]Models.Webpage{}, errors.New("error while fetching results"))
+	router.GET("/allpages", pageController.GetAllWebPages)
 
-	req, err := http.NewRequest("GET", "/allpages", nil)
-	if err != nil {
-		log.Println(err)
-	}
+	req := httptest.NewRequest("GET", "/allpages", nil)
+
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 
-	// Check response
 	assert.Equal(t, http.StatusOK, resp.Code)
-	// Check if mock function was called
-	//rdbMock.AssertExpectations(t)
-
 }
+
 func TestCreateWebPage(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	rdbMock := mocks.NewDBFunctions(t)
-
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
 	//To Test 206 status code when body is there but required data is not mentioned
+	//TestCase-1
 	//rdbMock.On("UploadWebpage").Return([]Models.Webpage{})
-	router.POST("/savepage", func(c *gin.Context) {
-		CreateWebPage(c, rdbMock)
-	})
+	router.POST("/savepage", pageController.CreateWebPage)
 	input := `{}`
-	req, err := http.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
-	if err != nil {
-		log.Println(err)
-	}
+	req := httptest.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
+
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusPartialContent, resp.Code)
 
 	//test for body nil staus code 400
-	input = `{"Title":"123","Keys":["123","234"]}`
-	req, err = http.NewRequest("POST", "/savepage", nil)
-	if err != nil {
-		log.Println(err)
-	}
+	//TestCase-2
+	req = httptest.NewRequest("POST", "/savepage", nil)
+
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
 	//check when BindJson error occurs statuscode 400
+	//TestCase-3
 	input = `"user":"name","password":"123","number":123,"mail":"email"`
-	req, err = http.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
-	if err != nil {
-		log.Println(err)
-	}
+	req = httptest.NewRequest("POST", "/savepage", bytes.NewBuffer([]byte(input)))
+
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
 
-	rdbMock.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
+	//TestCase-4
+	mockPageService.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
 	input = `"title":"page","keywords":["wrd1"]`
 	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
 
 	jsonInput, _ := json.Marshal(webpage)
-	req, err = http.NewRequest("POST", "/savepage", bytes.NewBuffer(jsonInput))
-	if err != nil {
-		log.Println(err)
-	}
+	req = httptest.NewRequest("POST", "/savepage", bytes.NewBuffer(jsonInput))
+
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusCreated, resp.Code)
@@ -100,21 +86,18 @@ func TestQueryHandle(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
-	rdbMock := mocks.NewDBFunctions(t)
-	router.POST("/querypages", func(c *gin.Context) {
-		QueryHandle(c, rdbMock)
-	})
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	router.POST("/querypages", pageController.QueryHandle)
 
-	req, err := http.NewRequest("POST", "/querypages", nil)
-	if err != nil {
-		log.Println(err)
-	}
+	req := httptest.NewRequest("POST", "/querypages", nil)
+
 	resp := httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusBadRequest, resp.Code)
 	assert.NotNil(t, resp.Body)
 
-	rdbMock.On("Search", mock.Anything).Return([]Models.Webpage{
+	mockPageService.On("Search", mock.Anything).Return([]Models.Webpage{
 		{Id: primitive.NewObjectID(), Title: "page-1", Keywords: []string{"Ford", "Review", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-2", Keywords: []string{"BMW", "Gin", "", "GO", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-3", Keywords: []string{"Car", "Toyota", "Mock"}},
@@ -123,10 +106,8 @@ func TestQueryHandle(t *testing.T) {
 	}, errors.New("error while fetching results"))
 	keys := Models.Keys{Keywords: []string{"Car"}}
 	inputjson, _ := json.Marshal(keys)
-	req, err = http.NewRequest("POST", "/querypages", bytes.NewBuffer([]byte(inputjson)))
-	if err != nil {
-		log.Println(err)
-	}
+	req = httptest.NewRequest("POST", "/querypages", bytes.NewBuffer([]byte(inputjson)))
+
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
@@ -139,7 +120,7 @@ func TestStatusCheck(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 	r.GET("/", StatusCheck)
-	req, _ := http.NewRequest("GET", "/", nil)
+	req := httptest.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -156,8 +137,11 @@ func TestHomepageHandler(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-	r.GET("/v1/", ServerHome)
-	req, _ := http.NewRequest("GET", "/v1/", nil)
+
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	r.GET("/v1/", pageController.ServerHome)
+	req := httptest.NewRequest("GET", "/v1/", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -167,8 +151,9 @@ func TestHomepageHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 func TestGenerateRanks(t *testing.T) {
-	rdbMock := mocks.NewDBFunctions(t)
-	rdbMock.On("Search", mock.Anything).Return([]Models.Webpage{
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	mockPageService.On("Search", mock.Anything).Return([]Models.Webpage{
 		{Id: primitive.NewObjectID(), Title: "page-1", Keywords: []string{"Ford", "Review", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-2", Keywords: []string{"BMW", "Gin", "", "GO", "Car"}},
 		{Id: primitive.NewObjectID(), Title: "page-3", Keywords: []string{"Car", "Toyota", "Mock"}},
@@ -183,7 +168,7 @@ func TestGenerateRanks(t *testing.T) {
 		{PageName: "page-5", Value: 70},
 		{PageName: "page-2", Value: 60},
 	}
-	actual := GeneratePageRanks(params, rdbMock)
+	actual := GeneratePageRanks(params, pageController)
 	assert.Equal(t, expected, actual)
 }
 func TestGetScore(t *testing.T) {

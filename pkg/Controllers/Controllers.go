@@ -2,8 +2,8 @@ package Controllers
 
 import (
 	"net/http"
-	. "search-engine/pkg/DatabaseConn"
 	"search-engine/pkg/Models"
+	service "search-engine/pkg/services"
 	"sort"
 	"strings"
 
@@ -23,14 +23,29 @@ func StatusCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, "Server Running")
 }
 
+type IPageController interface {
+	ServerHome(c *gin.Context)
+	GetAllWebPages(c *gin.Context)
+	CreateWebPage(c *gin.Context)
+	QueryHandle(c *gin.Context)
+}
+type PageController struct {
+	Pageservice service.PageService
+}
+
+func NewPageController(pgservice service.PageService) *PageController {
+	return &PageController{Pageservice: pgservice}
+}
+
 // @Summary get version data
 // @ID get-version-details
 // @Produce json
 // @Success 200 {object} Message
 // @Router /v1/ [get]
-func ServerHome(c *gin.Context) {
+func (pgc *PageController) ServerHome(c *gin.Context) {
 	msg := Message{"Search-Engine-Rest-Api", "v1"}
 	c.IndentedJSON(http.StatusOK, msg)
+
 }
 
 // @Summary get all pages in the webpages
@@ -38,8 +53,8 @@ func ServerHome(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} Models.Webpage
 // @Router /v1/allpages [get]
-func GetAllWebPages(c *gin.Context, rdb DBFunctions) {
-	allPages, _ := rdb.AllPagesInCollection()
+func (pgc *PageController) GetAllWebPages(c *gin.Context) {
+	allPages, _ := pgc.Pageservice.AllPagesInCollection()
 	c.IndentedJSON(http.StatusOK, allPages)
 }
 
@@ -52,15 +67,11 @@ func GetAllWebPages(c *gin.Context, rdb DBFunctions) {
 // @Failure 400 {object} Message
 // @Failure 206 {object} Message
 // @Router /v1/savepage [post]
-func CreateWebPage(c *gin.Context, rdb DBFunctions) {
+func (pgc *PageController) CreateWebPage(c *gin.Context) {
 	var webpage Models.Webpage
 
 	var msg Message
 	msg.Msg = "Enter a valid Content"
-	if c.Request.Body == nil {
-		c.IndentedJSON(http.StatusBadRequest, msg)
-		return
-	}
 
 	if err := c.BindJSON(&webpage); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, msg)
@@ -71,7 +82,7 @@ func CreateWebPage(c *gin.Context, rdb DBFunctions) {
 		return
 	}
 	webpage.ModifyKeysLength()
-	rdb.UploadWebpage(&webpage)
+	pgc.Pageservice.UploadWebpage(&webpage)
 	c.IndentedJSON(http.StatusCreated, webpage)
 }
 
@@ -83,7 +94,7 @@ func CreateWebPage(c *gin.Context, rdb DBFunctions) {
 // @Success 200 {object} Ranks
 // @Failure 400 {object} Message
 // @Router /v1/querypages [post]
-func QueryHandle(c *gin.Context, rdb DBFunctions) {
+func (pgc *PageController) QueryHandle(c *gin.Context) {
 	var webpage Models.Webpage
 	var msg Message
 	msg.Msg = "Enter a valid Content"
@@ -92,11 +103,11 @@ func QueryHandle(c *gin.Context, rdb DBFunctions) {
 		c.IndentedJSON(http.StatusBadRequest, msg)
 		return
 	}
-	PageRanks := GeneratePageRanks(webpage.Keywords, rdb)
+	PageRanks := GeneratePageRanks(webpage.Keywords, pgc)
 	c.IndentedJSON(http.StatusOK, PageRanks)
 }
-func GeneratePageRanks(params []string, rdb DBFunctions) []Ranks {
-	WebPages, _ := rdb.Search(params)
+func GeneratePageRanks(params []string, pgc *PageController) []Ranks {
+	WebPages, _ := pgc.Pageservice.Search(params)
 	var PageRank []Ranks
 	for _, webpage := range WebPages {
 		score := GetScore(webpage.Keywords, params)
