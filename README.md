@@ -54,7 +54,7 @@ make up
      }
      ```
 
-  4. Query : **GET** Request
+  4. Query : **POST** Request
 
      ```
      http://localhost:4000/v1/querypages
