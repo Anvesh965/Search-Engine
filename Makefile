@@ -24,11 +24,11 @@ dirr := ./pkg/DatabaseConn
 
 test: $(dirr)
 
-	go test ./pkg/Controllers $(dirr) -v -cover
+	go test ./... -v -cover
 
 cover:
 
-	go test -coverprofile coverage.out ./pkg/Controllers $(dirr)
+	go test -coverprofile coverage.out ./...
 
 	go tool cover -html coverage.out
 
