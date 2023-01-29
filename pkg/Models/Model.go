@@ -1,6 +1,10 @@
 package Models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"strings"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Webpage struct {
 	Id       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
@@ -16,12 +20,18 @@ type Keys struct {
 }
 
 func (w Webpage) Check() bool {
+	var title = w.Title
+	title = strings.Trim(title, " ")
+	if len(title) == 0 {
+		return true
+	}
 	if w.Title == "" || len(w.Keywords) == 0 {
 		return true
 	}
 	return false
 }
-//to allow not morethan 10 keywords
+
+// to allow not morethan 10 keywords
 func (w *Webpage) ModifyKeysLength() {
 	if len(w.Keywords) > 10 {
 		w.Keywords = append(w.Keywords[:10])
