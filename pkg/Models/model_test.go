@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
 func Test_Check(t *testing.T) {
 
 	testcases := []struct {
