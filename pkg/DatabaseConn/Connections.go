@@ -11,8 +11,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	. "search-engine/cmd/config"
+	"search-engine/cmd/config"
 	"search-engine/pkg/Models"
+	"search-engine/pkg/services"
 )
 
 type CollectionHelper interface {
@@ -26,7 +27,7 @@ func Start() CollectionHelper {
 
 	// Connecting to MongoDB database
 
-	URI := Config.Database.Protocol + "://" + Config.Database.Host + ":" + strconv.Itoa(Config.Database.Port)
+	URI := config.Config.Database.Protocol + "://" + config.Config.Database.Host + ":" + strconv.Itoa(config.Config.Database.Port)
 	log.Println("URI:", URI)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -49,7 +50,7 @@ func Start() CollectionHelper {
 
 	// creating database and collections
 
-	myCollPtr := client.Database(Config.Database.DBName).Collection(Config.Database.Collection)
+	myCollPtr := client.Database(config.Config.Database.DBName).Collection(config.Config.Database.Collection)
 
 	return myCollPtr
 }
@@ -58,7 +59,7 @@ type PageServiceStruct struct {
 	collPtr CollectionHelper
 }
 
-func NewPageService(ch CollectionHelper) *PageServiceStruct {
+func NewPageService(ch CollectionHelper) services.PageService {
 	return &PageServiceStruct{collPtr: ch}
 }
 

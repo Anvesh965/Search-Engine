@@ -1,5 +1,9 @@
 ## **Search-Engine-Task**
 
+<br>
+
+[![codecov](https://codecov.io/gh/Anvesh965/Search-Engine/branch/master/graph/badge.svg?token=TG5HLM0M31)](https://codecov.io/gh/Anvesh965/Search-Engine)
+
 ---
 
 ### **Step 1:** Clone the repository :
@@ -50,7 +54,7 @@ make up
      }
      ```
 
-  4. Query : **GET** Request
+  4. Query : **POST** Request
 
      ```
      http://localhost:4000/v1/querypages
@@ -63,7 +67,8 @@ make up
        "keywords": ["tesla", "ford", "wan"]
      }
      ```
-  5. Swagger UI 
+
+  5. Swagger UI
      ```
      http://localhost:4000/docs/index.html
      ```
