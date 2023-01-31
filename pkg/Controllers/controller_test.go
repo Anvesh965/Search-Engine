@@ -77,8 +77,30 @@ func TestCreateWebPage(t *testing.T) {
 
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
+	assert.NotEmpty(t, resp.Body)
+
+}
+func TestCreateCase5(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	//To Test 206 status code when body is there but required data is not mentioned
+	//TestCase-1
+	//rdbMock.On("UploadWebpage").Return([]Models.Webpage{})
+	router.POST("/savepage", pageController.CreateWebPage)
+	mockPageService.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, nil)
+	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
+
+	jsonInput2, _ := json.Marshal(webpage)
+	req := httptest.NewRequest("POST", "/savepage", bytes.NewBuffer(jsonInput2))
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusCreated, resp.Code)
 	assert.NotEmpty(t, resp.Body)
+
 }
 
 func TestQueryHandle(t *testing.T) {
