@@ -70,7 +70,6 @@ func TestCreateWebPage(t *testing.T) {
 
 	//TestCase-4
 	mockPageService.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
-	input = `"title":"page","keywords":["wrd1"]`
 	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
 
 	jsonInput, _ := json.Marshal(webpage)
