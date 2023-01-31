@@ -34,6 +34,6 @@ func (w Webpage) Check() bool {
 // to allow not morethan 10 keywords
 func (w *Webpage) ModifyKeysLength() {
 	if len(w.Keywords) > 10 {
-		w.Keywords = append(w.Keywords[:10])
+		w.Keywords = w.Keywords[:10]
 	}
 }

@@ -1,6 +1,7 @@
 package Routes
 
 import (
+	"log"
 	. "search-engine/cmd/config"
 	. "search-engine/pkg/Controllers"
 	"strconv"
@@ -12,7 +13,6 @@ import (
 
 func GetRouter() *gin.Engine {
 	r := gin.Default()
-	r.SetTrustedProxies(nil)
 	return r
 }
 func HandleRoutes(router *gin.Engine, pgc *PageController) {
@@ -36,5 +36,9 @@ func StartServer(pgc *PageController) {
 	HandleRoutes(router, pgc)
 
 	url := ":" + strconv.Itoa(Config.Server.Port)
-	router.Run(url)
+	err := router.Run(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

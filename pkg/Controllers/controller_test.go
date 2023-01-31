@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"search-engine/pkg/Models"
@@ -70,7 +70,6 @@ func TestCreateWebPage(t *testing.T) {
 
 	//TestCase-4
 	mockPageService.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
-	input = `"title":"page","keywords":["wrd1"]`
 	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
 
 	jsonInput, _ := json.Marshal(webpage)
@@ -124,7 +123,7 @@ func TestStatusCheck(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	responseData, _ := ioutil.ReadAll(w.Body)
+	responseData, _ := io.ReadAll(w.Body)
 	assert.Equal(t, mockResponse, string(responseData))
 	assert.Equal(t, http.StatusOK, w.Code)
 }
@@ -145,7 +144,7 @@ func TestHomepageHandler(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	responseData, _ := ioutil.ReadAll(w.Body)
+	responseData, _ := io.ReadAll(w.Body)
 
 	assert.Equal(t, string(mockResponse), string(responseData))
 	assert.Equal(t, http.StatusOK, w.Code)
