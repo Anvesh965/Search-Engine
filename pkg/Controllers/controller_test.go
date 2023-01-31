@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"search-engine/pkg/Models"
@@ -70,7 +70,6 @@ func TestCreateWebPage(t *testing.T) {
 
 	//TestCase-4
 	mockPageService.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, errors.New("Error while uploading"))
-	input = `"title":"page","keywords":["wrd1"]`
 	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
 
 	jsonInput, _ := json.Marshal(webpage)
@@ -78,8 +77,30 @@ func TestCreateWebPage(t *testing.T) {
 
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
+	assert.NotEmpty(t, resp.Body)
+
+}
+func TestCreateCase5(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.Default()
+	mockPageService := mockService.NewPageService(t)
+	pageController := NewPageController(mockPageService)
+	//To Test 206 status code when body is there but required data is not mentioned
+	//TestCase-1
+	//rdbMock.On("UploadWebpage").Return([]Models.Webpage{})
+	router.POST("/savepage", pageController.CreateWebPage)
+	mockPageService.On("UploadWebpage", mock.Anything).Return(&mongo.InsertOneResult{}, nil)
+	webpage := Models.Webpage{Title: "page", Keywords: []string{"wrd1"}}
+
+	jsonInput2, _ := json.Marshal(webpage)
+	req := httptest.NewRequest("POST", "/savepage", bytes.NewBuffer(jsonInput2))
+
+	resp := httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusCreated, resp.Code)
 	assert.NotEmpty(t, resp.Body)
+
 }
 
 func TestQueryHandle(t *testing.T) {
@@ -124,7 +145,7 @@ func TestStatusCheck(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	responseData, _ := ioutil.ReadAll(w.Body)
+	responseData, _ := io.ReadAll(w.Body)
 	assert.Equal(t, mockResponse, string(responseData))
 	assert.Equal(t, http.StatusOK, w.Code)
 }
@@ -145,7 +166,7 @@ func TestHomepageHandler(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	responseData, _ := ioutil.ReadAll(w.Body)
+	responseData, _ := io.ReadAll(w.Body)
 
 	assert.Equal(t, string(mockResponse), string(responseData))
 	assert.Equal(t, http.StatusOK, w.Code)

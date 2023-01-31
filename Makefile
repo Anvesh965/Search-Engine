@@ -22,7 +22,7 @@ dirr := ./pkg/DatabaseConn
 # 	go tool cover -html=coverage.out 
 # 	rm -r coverage.out
 
-test: $(dirr)
+test:
 
 	go test ./... -v -cover
 
