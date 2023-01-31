@@ -82,7 +82,11 @@ func (pgc *PageController) CreateWebPage(c *gin.Context) {
 		return
 	}
 	webpage.ModifyKeysLength()
-	pgc.Pageservice.UploadWebpage(&webpage)
+	_, err := pgc.Pageservice.UploadWebpage(&webpage)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err)
+		return
+	}
 	c.IndentedJSON(http.StatusCreated, webpage)
 }
 
